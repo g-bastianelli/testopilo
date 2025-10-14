@@ -5,6 +5,9 @@
   "references": [
     {
       "path": "./apps/lmnp/frontend"
+    },
+    {
+      "path": "./libs/ui"
     }
   ]
 }

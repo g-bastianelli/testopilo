@@ -1,11 +1,9 @@
 packages:
-  - packages/*
-  - apps/lmnp/*
-
+  - 'packages/*'
+  - 'apps/lmnp/*'
+  - 'libs/*'
 autoInstallPeers: true
-
 onlyBuiltDependencies:
   - '@swc/core'
-  - esbuild
-
+  - 'esbuild'
 strictPeerDependencies: false

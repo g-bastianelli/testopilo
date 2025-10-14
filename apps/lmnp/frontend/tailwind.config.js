@@ -1,10 +1,10 @@
 import { createGlobPatternsForDependencies } from '@nx/react/tailwind';
-
 import { join } from 'path';
-
+import uiConfig from '@testopilo/ui/tailwind.config.js';
 
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+export default {
+  ...uiConfig,
   content: [
     join(
       __dirname,
@@ -12,8 +12,4 @@ module.exports = {
     ),
     ...createGlobPatternsForDependencies(__dirname),
   ],
-  theme: {
-    extend: {},
-  },
-  plugins: [],
 };
