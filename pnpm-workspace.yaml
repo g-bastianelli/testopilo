@@ -1,5 +1,9 @@
 packages:
-  - "packages/*"
+  - packages/*
 
 autoInstallPeers: true
+
+onlyBuiltDependencies:
+  - esbuild
+
 strictPeerDependencies: false
