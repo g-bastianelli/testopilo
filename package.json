@@ -2,8 +2,13 @@
   "name": "@testopilo/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "prepare": "husky"
+  },
   "private": true,
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,json,css,md,html}": "prettier --write"
+  },
   "devDependencies": {
     "@babel/core": "^7.14.5",
     "@babel/preset-react": "^7.14.5",
@@ -34,8 +39,10 @@
     "eslint-plugin-jsx-a11y": "6.10.1",
     "eslint-plugin-react": "7.35.0",
     "eslint-plugin-react-hooks": "5.0.0",
+    "husky": "^9.1.7",
     "jiti": "2.4.2",
     "jsdom": "~22.1.0",
+    "lint-staged": "^16.2.4",
     "nx": "21.6.4",
     "postcss": "8.4.38",
     "prettier": "^2.6.2",
@@ -47,6 +54,5 @@
     "vite-plugin-dts": "~4.5.0",
     "vitest": "^3.0.0"
   },
-  "packageManager": "pnpm@10.17.1+sha512.17c560fca4867ae9473a3899ad84a88334914f379be46d455cbf92e5cf4b39d34985d452d2583baf19967fa76cb5c17bc9e245529d0b98745721aa7200ecaf7a",
-  "dependencies": {}
+  "packageManager": "pnpm@10.17.1+sha512.17c560fca4867ae9473a3899ad84a88334914f379be46d455cbf92e5cf4b39d34985d452d2583baf19967fa76cb5c17bc9e245529d0b98745721aa7200ecaf7a"
 }
