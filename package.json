@@ -16,6 +16,7 @@
     "@nx/eslint": "21.6.4",
     "@nx/eslint-plugin": "21.6.4",
     "@nx/js": "21.6.4",
+    "@nx/node": "21.6.4",
     "@nx/react": "21.6.4",
     "@nx/vite": "21.6.4",
     "@nx/web": "21.6.4",
