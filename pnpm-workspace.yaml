@@ -7,3 +7,7 @@ onlyBuiltDependencies:
   - '@swc/core'
   - 'esbuild'
 strictPeerDependencies: false
+catalog:
+  lucide-react: '0.545.0'
+  react: '19.0.0'
+  react-dom: '19.0.0'

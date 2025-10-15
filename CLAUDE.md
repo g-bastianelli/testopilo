@@ -13,6 +13,7 @@
 # CI Error Guidelines
 
 If the user wants help with fixing an error in their CI pipeline, use the following flow:
+
 - Retrieve the list of current CI Pipeline Executions (CIPEs) using the `nx_cloud_cipe_details` tool
 - If there are any errors, use the `nx_cloud_fix_cipe_failure` tool to retrieve the logs for a specific task
 - Use the task logs to see what's wrong and help the user fix their problem. Use the appropriate tools if necessary
@@ -25,6 +26,7 @@ If the user wants help with fixing an error in their CI pipeline, use the follow
 When creating git commits, follow these conventional commit patterns:
 
 ## General Format
+
 ```
 <type>(<scope>): <subject>
 
@@ -36,15 +38,18 @@ When creating git commits, follow these conventional commit patterns:
 ## Dependency Management
 
 ### Adding Dependencies
+
 ```
 chore(deps): add [package-name]
 build(deps): add [package-name]  # if it affects build configuration
 ```
 
 **Examples:**
+
 - Basic: `chore(deps): add @nx/react package`
 - Descriptive: `chore(deps): add @nx/react for React workspace support`
 - With body:
+
   ```
   chore(deps): add @nx/react plugin
 
@@ -54,17 +59,20 @@ build(deps): add [package-name]  # if it affects build configuration
   ```
 
 ### Updating Dependencies
+
 ```
 chore(deps): update [package-name] to v2.0.0
 chore(deps): bump [package-name] from 1.x to 2.x
 ```
 
 ### Removing Dependencies
+
 ```
 chore(deps): remove unused [package-name]
 ```
 
 ## Common Commit Types
+
 - **feat**: New feature
 - **fix**: Bug fix
 - **docs**: Documentation changes
@@ -77,7 +85,9 @@ chore(deps): remove unused [package-name]
 - **perf**: Performance improvements
 
 ## Scopes
+
 Use meaningful scopes to indicate the area of change:
+
 - `deps`: Dependencies
 - `config`: Configuration files
 - Project names: `api`, `web`, `shared`, etc.
