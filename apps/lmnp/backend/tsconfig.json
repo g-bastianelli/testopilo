@@ -4,6 +4,9 @@
   "include": [],
   "references": [
     {
+      "path": "../../../libs/logger"
+    },
+    {
       "path": "./tsconfig.app.json"
     }
   ]

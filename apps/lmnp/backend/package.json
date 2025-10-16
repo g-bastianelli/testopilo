@@ -5,6 +5,7 @@
   "type": "module",
   "dependencies": {
     "@hono/node-server": "1.19.5",
+    "@testopilo/logger": "workspace:*",
     "hono": "4.9.12"
   }
 }

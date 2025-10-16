@@ -11,6 +11,9 @@
     },
     {
       "path": "./apps/lmnp/backend"
+    },
+    {
+      "path": "./libs/logger"
     }
   ]
 }

@@ -1,11 +1,15 @@
 import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
+import { logger } from '@testopilo/logger';
 
 const app = new Hono();
 app.get('/', (c) => c.text('Hello Node.js!'));
 
 const port = process.env.PORT || 3000;
-console.log(`Server is running on port ${port}`);
+
+logger.info({
+  msg: `Server is running on port ${port}`,
+});
 
 const server = serve({
   fetch: app.fetch,
@@ -20,7 +24,10 @@ process.on('SIGINT', () => {
 process.on('SIGTERM', () => {
   server.close((err) => {
     if (err) {
-      console.error(err);
+      logger.error({
+        msg: `Error closing server`,
+        err,
+      });
       process.exit(1);
     }
     process.exit(0);

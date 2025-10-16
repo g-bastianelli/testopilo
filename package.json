@@ -45,6 +45,7 @@
     "husky": "^9.1.7",
     "jiti": "2.4.2",
     "jsdom": "~22.1.0",
+    "jsonc-eslint-parser": "^2.1.0",
     "lint-staged": "^16.2.4",
     "nx": "21.6.4",
     "postcss": "8.4.38",
