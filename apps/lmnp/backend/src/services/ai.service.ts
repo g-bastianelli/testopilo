@@ -51,8 +51,10 @@ RÈGLES IMPORTANTES :
 - Tu EXTRAIS UNIQUEMENT les données de la conversation
 - Tous les calculs sont faits par le code système
 - Réponds toujours en français de façon naturelle et amicale
-- Pose des questions de suivi pour extraire les données manquantes
-- Si l'utilisateur donne plusieurs informations d'un coup, extrais-les toutes
+- **CRITIQUE** : Appelle TOUJOURS l'outil update_simulation_data dès que l'utilisateur donne une information
+- Si l'utilisateur donne plusieurs informations d'un coup, extrais-les TOUTES dans un seul appel d'outil
+- Après avoir extrait les données, confirme à l'utilisateur ce que tu as compris
+- Si des informations manquent encore, demande-les de façon claire et directe
 
 Données de simulation actuelles :
 - Prix d'achat : ${
@@ -107,13 +109,55 @@ Quand tu identifies des détails sur le bien dans la conversation, utilise l'out
     const systemPrompt = this.buildSystemPrompt(currentData);
 
     try {
-      // Bind tool to the model
+      // Bind tool to the model with detailed description
       const modelWithTool = this.model.bindTools([
         {
           name: 'update_simulation_data',
           description:
-            'Update LMNP simulation data based on information extracted from the conversation',
-          schema: UpdateSimulationSchema,
+            'Extract and update LMNP property investment data from the user conversation. Call this tool EVERY TIME the user provides ANY information about their property (price, rent, expenses, duration, tax rate, etc.). Extract ALL mentioned values in a single call.',
+          schema: {
+            type: 'object',
+            properties: {
+              purchasePrice: {
+                type: 'number',
+                description:
+                  'Prix d\'achat du bien immobilier en euros. Exemples: "200000 euros", "350 000€", "deux cent mille"',
+              },
+              monthlyRent: {
+                type: 'number',
+                description:
+                  'Loyer mensuel en euros. Exemples: "800€ par mois", "850 euros/mois"',
+              },
+              annualExpenses: {
+                type: 'number',
+                description:
+                  'Charges annuelles totales en euros (taxe foncière, assurance, entretien, etc.). Exemples: "1500€ par an", "2000 euros de charges"',
+              },
+              holdingPeriod: {
+                type: 'integer',
+                description:
+                  'Durée de détention prévue en années. Exemples: "10 ans", "je vais le garder 15 ans", "pendant 20 ans"',
+              },
+              taxRate: {
+                type: 'number',
+                description:
+                  'Taux marginal d\'imposition (TMI) en pourcentage. DOIT être 0, 11, 30, 41 ou 45. Exemples: "je suis imposé à 30%", "TMI de 41%"',
+              },
+              loanAmount: {
+                type: 'number',
+                description:
+                  'Montant de l\'emprunt en euros (optionnel, 0 si achat comptant)',
+              },
+              interestRate: {
+                type: 'number',
+                description: 'Taux d\'intérêt du prêt en pourcentage (optionnel)',
+              },
+              loanDuration: {
+                type: 'integer',
+                description: 'Durée du prêt en années (optionnel)',
+              },
+            },
+          },
         },
       ]);
 
@@ -151,8 +195,27 @@ Quand tu identifies des détails sur le bien dans la conversation, utilise l'out
         }
       }
 
+      // Generate response message
+      let responseMessage = response.content as string;
+
+      // If no content, generate a helpful message based on missing fields
+      if (!responseMessage || responseMessage.trim() === '') {
+        const stillMissing: string[] = [];
+        if (updatedData.purchasePrice === null) stillMissing.push('le prix d\'achat');
+        if (updatedData.monthlyRent === null) stillMissing.push('le loyer mensuel');
+        if (updatedData.annualExpenses === null) stillMissing.push('les charges annuelles');
+        if (updatedData.holdingPeriod === null) stillMissing.push('la durée de détention');
+        if (updatedData.taxRate === null) stillMissing.push('votre taux d\'imposition');
+
+        if (stillMissing.length > 0) {
+          responseMessage = `Parfait ! J'ai bien noté vos informations. Pour compléter la simulation, j'ai encore besoin de : ${stillMissing.join(', ')}. Pouvez-vous me donner ces informations ?`;
+        } else {
+          responseMessage = `Excellent ! J'ai toutes les informations nécessaires. La simulation est maintenant complète !`;
+        }
+      }
+
       return {
-        message: (response.content as string) || "Sorry, I didn't understand.",
+        message: responseMessage,
         updatedData,
       };
     } catch (err) {
