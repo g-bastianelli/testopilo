@@ -23,6 +23,7 @@ export {
 // Calculations
 export {
   LMNP_CONSTANTS,
+  isSimulationDataComplete,
   calculateLoanInterest,
   calculateMonthlyPayment,
   calculateDepreciation,

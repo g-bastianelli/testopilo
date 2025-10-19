@@ -10,8 +10,8 @@ import {
   exceedsMicroBicThreshold,
   exceedsLmnpThreshold,
   getDefaultSimulationData,
-} from './calculations';
-import type { SimulationData } from './types';
+} from './calculations.js';
+import type { SimulationData } from './types.js';
 
 describe('LMNP Calculations', () => {
   describe('calculateLoanInterest', () => {

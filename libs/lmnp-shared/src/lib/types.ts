@@ -4,31 +4,32 @@
 
 /**
  * Data required for LMNP simulation
+ * Required fields can be null when not yet provided by user
  */
 export interface SimulationData {
   /** Purchase price of the property (€) */
-  purchasePrice: number;
+  purchasePrice: number | null;
 
   /** Monthly rent (€/month) */
-  monthlyRent: number;
+  monthlyRent: number | null;
 
   /** Annual deductible expenses (€/year) - property tax, insurance, etc. */
-  annualExpenses: number;
+  annualExpenses: number | null;
 
   /** Expected holding period (years) */
-  holdingPeriod: number;
+  holdingPeriod: number | null;
 
   /** Marginal tax rate (%) - 0, 11, 30, 41, 45 */
-  taxRate: number;
+  taxRate: number | null;
 
   /** Loan amount (€) - 0 if cash purchase */
-  loanAmount?: number;
+  loanAmount?: number | null;
 
   /** Loan interest rate (%) */
-  interestRate?: number;
+  interestRate?: number | null;
 
   /** Loan duration (years) */
-  loanDuration?: number;
+  loanDuration?: number | null;
 
   /** Land portion of purchase price (%) - non-depreciable */
   landPortion?: number;

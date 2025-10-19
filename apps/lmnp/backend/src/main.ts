@@ -1,11 +1,24 @@
 import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
 import { logger } from '@testopilo/logger';
+import { cors } from 'hono/cors';
+import chat from './routes/chat.routes.js';
+import simulate from './routes/simulate.routes.js';
+import { env } from './config/env.js';
 
 const app = new Hono();
-app.get('/', (c) => c.text('Hello Node.js!'));
 
-const port = process.env.PORT || 3000;
+// Middleware
+app.use('/*', cors());
+
+// Routes
+app.get('/health', (c) =>
+  c.json({ message: 'LMNP Backend API', version: env.VERSION })
+);
+app.route('/chat', chat);
+app.route('/simulate', simulate);
+
+const port = env.PORT;
 
 logger.info({
   msg: `Server is running on port ${port}`,

@@ -75,11 +75,27 @@ export function calculateMonthlyPayment(
 }
 
 /**
+ * Check if all required fields are provided (not null)
+ */
+export function isSimulationDataComplete(data: SimulationData): boolean {
+  return (
+    data.purchasePrice !== null &&
+    data.monthlyRent !== null &&
+    data.annualExpenses !== null &&
+    data.holdingPeriod !== null &&
+    data.taxRate !== null
+  );
+}
+
+/**
  * Calculate depreciation details
+ * Returns null if required data is missing
  */
 export function calculateDepreciation(
   data: SimulationData
-): DepreciationDetails {
+): DepreciationDetails | null {
+  if (data.purchasePrice === null) return null;
+
   const landPortion = data.landPortion ?? LMNP_CONSTANTS.DEFAULT_LAND_PORTION;
   const furnitureValue = data.furnitureValue ?? 0;
 
@@ -110,22 +126,27 @@ export function calculateDepreciation(
 
 /**
  * Calculate Micro-BIC regime simulation
+ * Returns null if required data is incomplete
  */
-export function calculateMicroBic(data: SimulationData): SimulationResult {
-  const annualRent = data.monthlyRent * 12;
+export function calculateMicroBic(
+  data: SimulationData
+): SimulationResult | null {
+  if (!isSimulationDataComplete(data)) return null;
+
+  const annualRent = data.monthlyRent! * 12;
 
   // Micro-BIC: 50% flat deduction
   const deductions = annualRent * LMNP_CONSTANTS.MICRO_BIC_DEDUCTION_RATE;
   const taxableIncome = annualRent - deductions;
 
   // Calculate tax
-  const tax = (taxableIncome * data.taxRate) / 100;
+  const tax = (taxableIncome * data.taxRate!) / 100;
 
   // Net income
   const netIncome = annualRent - tax;
 
   // Cash flow (after loan payments if any)
-  let cashFlow = netIncome - data.annualExpenses;
+  let cashFlow = netIncome - data.annualExpenses!;
   if (data.loanAmount && data.interestRate && data.loanDuration) {
     const monthlyPayment = calculateMonthlyPayment(
       data.loanAmount,
@@ -136,7 +157,7 @@ export function calculateMicroBic(data: SimulationData): SimulationResult {
   }
 
   // Net return on investment
-  const investment = data.purchasePrice - (data.loanAmount ?? 0);
+  const investment = data.purchasePrice! - (data.loanAmount ?? 0);
   const netReturn = investment > 0 ? (netIncome / investment) * 100 : 0;
 
   return {
@@ -153,13 +174,18 @@ export function calculateMicroBic(data: SimulationData): SimulationResult {
 
 /**
  * Calculate Real Regime (Régime Réel) simulation
+ * Returns null if required data is incomplete
  */
-export function calculateRealRegime(data: SimulationData): SimulationResult {
-  const annualRent = data.monthlyRent * 12;
+export function calculateRealRegime(
+  data: SimulationData
+): SimulationResult | null {
+  if (!isSimulationDataComplete(data)) return null;
+
+  const annualRent = data.monthlyRent! * 12;
 
   // Calculate depreciation
   const depreciationDetails = calculateDepreciation(data);
-  const depreciation = depreciationDetails.totalDepreciation;
+  const depreciation = depreciationDetails!.totalDepreciation;
 
   // Calculate loan interest
   const loanInterest = data.loanAmount
@@ -171,19 +197,19 @@ export function calculateRealRegime(data: SimulationData): SimulationResult {
     : 0;
 
   // Real regime: deduct actual expenses + depreciation + loan interest
-  const deductions = data.annualExpenses + depreciation + loanInterest;
+  const deductions = data.annualExpenses! + depreciation + loanInterest;
 
   // Taxable income (can be negative = deficit)
   const taxableIncome = Math.max(0, annualRent - deductions);
 
   // Calculate tax
-  const tax = (taxableIncome * data.taxRate) / 100;
+  const tax = (taxableIncome * data.taxRate!) / 100;
 
   // Net income
   const netIncome = annualRent - tax;
 
   // Cash flow (after loan payments if any)
-  let cashFlow = netIncome - data.annualExpenses;
+  let cashFlow = netIncome - data.annualExpenses!;
   if (data.loanAmount && data.interestRate && data.loanDuration) {
     const monthlyPayment = calculateMonthlyPayment(
       data.loanAmount,
@@ -194,7 +220,7 @@ export function calculateRealRegime(data: SimulationData): SimulationResult {
   }
 
   // Net return on investment
-  const investment = data.purchasePrice - (data.loanAmount ?? 0);
+  const investment = data.purchasePrice! - (data.loanAmount ?? 0);
   const netReturn = investment > 0 ? (netIncome / investment) * 100 : 0;
 
   return {
@@ -213,14 +239,19 @@ export function calculateRealRegime(data: SimulationData): SimulationResult {
 
 /**
  * Compare both regimes and return comprehensive results
+ * Returns null if required data is incomplete
  */
-export function compareRegimes(data: SimulationData): RegimeComparison {
+export function compareRegimes(data: SimulationData): RegimeComparison | null {
+  if (!isSimulationDataComplete(data)) return null;
+
   const microBic = calculateMicroBic(data);
   const realRegime = calculateRealRegime(data);
 
+  if (!microBic || !realRegime) return null;
+
   // Calculate savings
   const annualSavings = microBic.tax - realRegime.tax;
-  const totalSavings = annualSavings * data.holdingPeriod;
+  const totalSavings = annualSavings * data.holdingPeriod!;
 
   // Determine recommended regime
   let recommendedRegime: 'Micro-BIC' | 'Real Regime';
@@ -231,9 +262,9 @@ export function compareRegimes(data: SimulationData): RegimeComparison {
     const savingsPercent = ((annualSavings / microBic.tax) * 100).toFixed(1);
     recommendation = `Real Regime saves €${Math.round(
       annualSavings
-    )}/year (${savingsPercent}% tax reduction). Total savings over ${
-      data.holdingPeriod
-    } years: €${Math.round(totalSavings)}.`;
+    )}/year (${savingsPercent}% tax reduction). Total savings over ${data.holdingPeriod!} years: €${Math.round(
+      totalSavings
+    )}.`;
   } else if (microBic.netIncome > realRegime.netIncome) {
     recommendedRegime = 'Micro-BIC';
     recommendation = `Micro-BIC is more advantageous due to low expenses and simplicity. No accounting required.`;
@@ -269,19 +300,19 @@ export function exceedsLmnpThreshold(monthlyRent: number): boolean {
 }
 
 /**
- * Get default simulation data (for initialization)
+ * Get default simulation data (empty state for AI-first experience)
  */
 export function getDefaultSimulationData(): SimulationData {
   return {
-    purchasePrice: 200_000,
-    monthlyRent: 800,
-    annualExpenses: 1_500,
-    holdingPeriod: 10,
-    taxRate: 30,
-    loanAmount: 0,
-    interestRate: 0,
-    loanDuration: 0,
+    purchasePrice: null,
+    monthlyRent: null,
+    annualExpenses: null,
+    holdingPeriod: null,
+    taxRate: null,
+    loanAmount: null,
+    interestRate: null,
+    loanDuration: null,
     landPortion: LMNP_CONSTANTS.DEFAULT_LAND_PORTION,
-    furnitureValue: 5_000,
+    furnitureValue: 0,
   };
 }

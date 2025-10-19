@@ -6,31 +6,36 @@ import { z } from 'zod';
 
 /**
  * Validation schema for simulation data
+ * Required fields accept null when not yet provided by user
  */
 export const SimulationDataSchema = z.object({
   purchasePrice: z
     .number()
     .positive({ message: 'Purchase price must be positive' })
     .min(1000, { message: 'Purchase price must be at least €1,000' })
-    .max(10_000_000, { message: 'Purchase price cannot exceed €10,000,000' }),
+    .max(10_000_000, { message: 'Purchase price cannot exceed €10,000,000' })
+    .nullable(),
 
   monthlyRent: z
     .number()
     .positive({ message: 'Monthly rent must be positive' })
     .min(100, { message: 'Monthly rent must be at least €100' })
-    .max(50_000, { message: 'Monthly rent cannot exceed €50,000' }),
+    .max(50_000, { message: 'Monthly rent cannot exceed €50,000' })
+    .nullable(),
 
   annualExpenses: z
     .number()
     .nonnegative({ message: 'Annual expenses cannot be negative' })
-    .max(100_000, { message: 'Annual expenses cannot exceed €100,000' }),
+    .max(100_000, { message: 'Annual expenses cannot exceed €100,000' })
+    .nullable(),
 
   holdingPeriod: z
     .number()
     .int({ message: 'Holding period must be an integer' })
     .positive({ message: 'Holding period must be positive' })
     .min(1, { message: 'Holding period must be at least 1 year' })
-    .max(50, { message: 'Holding period cannot exceed 50 years' }),
+    .max(50, { message: 'Holding period cannot exceed 50 years' })
+    .nullable(),
 
   taxRate: z
     .number()
@@ -38,18 +43,21 @@ export const SimulationDataSchema = z.object({
     .max(100, { message: 'Tax rate cannot exceed 100%' })
     .refine((val) => [0, 11, 30, 41, 45].includes(val), {
       message: 'Tax rate must be 0, 11, 30, 41, or 45%',
-    }),
+    })
+    .nullable(),
 
   loanAmount: z
     .number()
     .nonnegative({ message: 'Loan amount cannot be negative' })
     .max(10_000_000, { message: 'Loan amount cannot exceed €10,000,000' })
+    .nullable()
     .optional(),
 
   interestRate: z
     .number()
     .nonnegative({ message: 'Interest rate cannot be negative' })
     .max(20, { message: 'Interest rate cannot exceed 20%' })
+    .nullable()
     .optional(),
 
   loanDuration: z
@@ -57,6 +65,7 @@ export const SimulationDataSchema = z.object({
     .int({ message: 'Loan duration must be an integer' })
     .positive({ message: 'Loan duration must be positive' })
     .max(30, { message: 'Loan duration cannot exceed 30 years' })
+    .nullable()
     .optional(),
 
   landPortion: z

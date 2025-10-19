@@ -7,6 +7,9 @@
       "path": "../../../libs/logger"
     },
     {
+      "path": "../../../libs/lmnp-shared"
+    },
+    {
       "path": "./tsconfig.app.json"
     }
   ]
