@@ -223,6 +223,7 @@ Quand tu identifies des détails sur le bien dans la conversation, utilise l'out
           });
         } catch (err) {
           logger.error({ msg: 'Invalid tool call arguments', err });
+          throw new Error('Invalid tool call arguments', { cause: err });
         }
       }
 

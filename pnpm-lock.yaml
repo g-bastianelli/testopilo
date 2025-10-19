@@ -197,6 +197,9 @@ importers:
 
   apps/lmnp/frontend:
     dependencies:
+      '@testopilo/lmnp-shared':
+        specifier: workspace:*
+        version: link:../../../libs/lmnp-shared
       '@testopilo/ui':
         specifier: workspace:*
         version: link:../../../libs/ui

@@ -41,9 +41,9 @@ export const SimulationDataSchema = z.object({
     .number()
     .nonnegative({ message: 'Tax rate cannot be negative' })
     .max(100, { message: 'Tax rate cannot exceed 100%' })
-    .refine((val) => [0, 11, 30, 41, 45].includes(val), {
-      message: 'Tax rate must be 0, 11, 30, 41, or 45%',
-    })
+    // .refine((val) => [0, 11, 30, 41, 45].includes(val), {
+    //   message: 'Tax rate must be 0, 11, 30, 41, or 45%',
+    // })
     .nullable(),
 
   loanAmount: z

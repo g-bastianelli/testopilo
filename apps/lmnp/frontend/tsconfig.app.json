@@ -38,6 +38,9 @@
   "references": [
     {
       "path": "../../../libs/ui/tsconfig.lib.json"
+    },
+    {
+      "path": "../../../libs/lmnp-shared/tsconfig.lib.json"
     }
   ]
 }
