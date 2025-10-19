@@ -85,6 +85,7 @@ export const SimulationDataSchema = z.object({
 
 /**
  * Schema for partial updates (used by AI)
+ * Note: Optional fields use .nonnegative() instead of .positive() to allow 0 values
  */
 export const UpdateSimulationSchema = z.object({
   purchasePrice: z.number().positive().optional(),
@@ -94,7 +95,7 @@ export const UpdateSimulationSchema = z.object({
   taxRate: z.number().min(0).max(100).optional(),
   loanAmount: z.number().nonnegative().optional(),
   interestRate: z.number().nonnegative().max(20).optional(),
-  loanDuration: z.number().int().positive().max(30).optional(),
+  loanDuration: z.number().int().nonnegative().max(30).optional(), // Changed to nonnegative
   landPortion: z.number().nonnegative().max(100).optional(),
   furnitureValue: z.number().nonnegative().optional(),
 });

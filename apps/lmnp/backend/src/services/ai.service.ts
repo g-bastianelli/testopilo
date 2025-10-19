@@ -1,5 +1,6 @@
 /**
  * AI Service using LangChain for LMNP conversation and data extraction
+ * Following LangChain best practices
  */
 
 import { logger } from '@testopilo/logger';
@@ -10,6 +11,13 @@ import {
   UpdateSimulationSchema,
 } from '@testopilo/lmnp-shared';
 import { ChatXAI } from '@langchain/xai';
+import {
+  HumanMessage,
+  AIMessage,
+  SystemMessage,
+  type BaseMessage,
+} from '@langchain/core/messages';
+import { env } from '../config/env.js';
 
 export class AiService {
   private model: ChatXAI;
@@ -18,8 +26,7 @@ export class AiService {
     this.model = new ChatXAI({
       model: 'grok-4-latest',
       temperature: 0.7,
-      apiKey:
-        'xai-UAcft8ryqlIXnO8ibilvhBV5K4ox2zltcJTmmPcOCk9jSH7IXvhIrSwHqdppXYpYSJRyKqKFpH55CPo4',
+      apiKey: env.XAI_API_KEY,
     });
   }
 
@@ -100,7 +107,30 @@ Quand tu identifies des détails sur le bien dans la conversation, utilise l'out
   }
 
   /**
+   * Convert ChatMessage[] to LangChain BaseMessage[]
+   * Best practice: Use proper message types
+   */
+  private convertToLangChainMessages(
+    messages: ChatMessage[],
+    systemPrompt: string
+  ): BaseMessage[] {
+    const langchainMessages: BaseMessage[] = [new SystemMessage(systemPrompt)];
+
+    for (const msg of messages) {
+      if (msg.role === 'user') {
+        langchainMessages.push(new HumanMessage(msg.content));
+      } else if (msg.role === 'assistant') {
+        langchainMessages.push(new AIMessage(msg.content));
+      }
+      // 'system' role is already added at the beginning
+    }
+
+    return langchainMessages;
+  }
+
+  /**
    * Chat with AI and extract simulation data updates
+   * Best practice: Proper error handling, type-safe tool schema
    */
   async chat(
     messages: ChatMessage[],
@@ -109,7 +139,7 @@ Quand tu identifies des détails sur le bien dans la conversation, utilise l'out
     const systemPrompt = this.buildSystemPrompt(currentData);
 
     try {
-      // Bind tool to the model with detailed description
+      // Best practice: Bind tool to the model with detailed JSON schema
       const modelWithTool = this.model.bindTools([
         {
           name: 'update_simulation_data',
@@ -146,11 +176,12 @@ Quand tu identifies des détails sur le bien dans la conversation, utilise l'out
               loanAmount: {
                 type: 'number',
                 description:
-                  'Montant de l\'emprunt en euros (optionnel, 0 si achat comptant)',
+                  "Montant de l'emprunt en euros (optionnel, 0 si achat comptant)",
               },
               interestRate: {
                 type: 'number',
-                description: 'Taux d\'intérêt du prêt en pourcentage (optionnel)',
+                description:
+                  "Taux d'intérêt du prêt en pourcentage (optionnel)",
               },
               loanDuration: {
                 type: 'integer',
@@ -161,14 +192,14 @@ Quand tu identifies des détails sur le bien dans la conversation, utilise l'out
         },
       ]);
 
-      // Create messages for LangChain
-      const chatMessages = [
-        ['system', systemPrompt] as [string, string],
-        ...messages.map((m) => [m.role, m.content] as [string, string]),
-      ];
+      // Best practice: Convert to proper LangChain message types
+      const langchainMessages = this.convertToLangChainMessages(
+        messages,
+        systemPrompt
+      );
 
       // Invoke the model
-      const response = await modelWithTool.invoke(chatMessages);
+      const response = await modelWithTool.invoke(langchainMessages);
 
       let updatedData = { ...currentData };
 
@@ -201,14 +232,21 @@ Quand tu identifies des détails sur le bien dans la conversation, utilise l'out
       // If no content, generate a helpful message based on missing fields
       if (!responseMessage || responseMessage.trim() === '') {
         const stillMissing: string[] = [];
-        if (updatedData.purchasePrice === null) stillMissing.push('le prix d\'achat');
-        if (updatedData.monthlyRent === null) stillMissing.push('le loyer mensuel');
-        if (updatedData.annualExpenses === null) stillMissing.push('les charges annuelles');
-        if (updatedData.holdingPeriod === null) stillMissing.push('la durée de détention');
-        if (updatedData.taxRate === null) stillMissing.push('votre taux d\'imposition');
+        if (updatedData.purchasePrice === null)
+          stillMissing.push("le prix d'achat");
+        if (updatedData.monthlyRent === null)
+          stillMissing.push('le loyer mensuel');
+        if (updatedData.annualExpenses === null)
+          stillMissing.push('les charges annuelles');
+        if (updatedData.holdingPeriod === null)
+          stillMissing.push('la durée de détention');
+        if (updatedData.taxRate === null)
+          stillMissing.push("votre taux d'imposition");
 
         if (stillMissing.length > 0) {
-          responseMessage = `Parfait ! J'ai bien noté vos informations. Pour compléter la simulation, j'ai encore besoin de : ${stillMissing.join(', ')}. Pouvez-vous me donner ces informations ?`;
+          responseMessage = `Parfait ! J'ai bien noté vos informations. Pour compléter la simulation, j'ai encore besoin de : ${stillMissing.join(
+            ', '
+          )}. Pouvez-vous me donner ces informations ?`;
         } else {
           responseMessage = `Excellent ! J'ai toutes les informations nécessaires. La simulation est maintenant complète !`;
         }

@@ -12,6 +12,7 @@
     "@testopilo/lmnp-shared": "workspace:*",
     "@testopilo/logger": "workspace:*",
     "hono": "4.9.12",
-    "zod": "^4.1.12"
+    "zod": "^4.1.12",
+    "zod-to-json-schema": "^3.24.6"
   }
 }

@@ -11,6 +11,7 @@ const envSchema = z.object({
     .default('development'),
   PORT: z.string().default('3000'),
   OPENAI_API_KEY: z.string().min(1, 'OPENAI_API_KEY is required'),
+  XAI_API_KEY: z.string().min(1, 'XAI_API_KEY is required'),
 });
 
 function validateEnv() {
