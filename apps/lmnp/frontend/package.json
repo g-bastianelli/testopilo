@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "@lmnp/shared": "workspace:*",
     "@testopilo/ui": "workspace:*",
     "lucide-react": "catalog:",
     "react": "catalog:",

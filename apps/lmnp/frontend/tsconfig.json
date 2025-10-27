@@ -3,6 +3,9 @@
   "include": [],
   "references": [
     {
+      "path": "../../../libs/lmnp/shared"
+    },
+    {
       "path": "../../../libs/ui"
     },
     {
