@@ -4,7 +4,16 @@
   "include": [],
   "references": [
     {
-      "path": "../../../libs/logger"
+      "path": "../../../libs/utils/logger"
+    },
+    {
+      "path": "../../../libs/utils/config"
+    },
+    {
+      "path": "../../../libs/lmnp/shared"
+    },
+    {
+      "path": "../../../libs/lmnp/ai"
     },
     {
       "path": "./tsconfig.app.json"

@@ -13,10 +13,16 @@
       "path": "./apps/lmnp/backend"
     },
     {
-      "path": "./libs/logger"
+      "path": "./libs/lmnp/ai"
     },
     {
-      "path": "./libs/lmnp-shared"
+      "path": "./libs/lmnp/shared"
+    },
+    {
+      "path": "./libs/utils/config"
+    },
+    {
+      "path": "./libs/utils/logger"
     }
   ]
 }

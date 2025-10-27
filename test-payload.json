@@ -1,0 +1,27 @@
+{
+  "messages": [
+    {
+      "role": "assistant",
+      "content": "Bonjour ! Je vais vous aider à simuler votre investissement en Location Meublée Non Professionnelle (LMNP). Pour commencer, parlez-moi de votre projet : quel bien envisagez-vous d'acheter ?"
+    },
+    {
+      "role": "user",
+      "content": "je souhaite acheter une maison a 350 000 euros"
+    },
+    {
+      "role": "assistant",
+      "content": "Bonjour ! Super, vous envisagez d'acheter une maison à 350 000 euros. C'est un bon point de départ pour votre projet LMNP. Pour affiner la simulation, pourriez-vous me donner plus de détails ? Par exemple, quel est le loyer mensuel que vous prévoyez pour cette maison ? Et quelles sont les charges annuelles estimées (comme les taxes, assurances, etc.) ? Aussi, combien de temps comptez-vous détenir ce bien, et quel est votre taux marginal d'imposition (TMI) ? Ces infos m'aideront à remplir les données pour une simulation précise ! 😊"
+    },
+    {
+      "role": "user",
+      "content": "je suis imposé a 30% et je compte garder la maison 15 ans"
+    }
+  ],
+  "currentData": {
+    "purchasePrice": 350000,
+    "monthlyRent": null,
+    "annualExpenses": null,
+    "holdingPeriod": null,
+    "taxRate": null
+  }
+}

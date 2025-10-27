@@ -21,6 +21,40 @@ If the user wants help with fixing an error in their CI pipeline, use the follow
 
 <!-- nx configuration end-->
 
+# Coding Standards
+
+## Language
+
+**IMPORTANT**: All code must be written in **English only**.
+
+- Variable names, function names, class names: English
+- Comments and documentation: English
+- Error messages in code: English
+- Log messages: English
+- Type definitions and interfaces: English
+
+**Exception**: User-facing content (UI text, AI responses to end users) can be in the target language (e.g., French for French users).
+
+**Examples:**
+
+✅ **Good**:
+
+```typescript
+// Calculate annual rental income
+const annualRentalIncome = monthlyRent * 12;
+throw new Error('Invalid purchase price');
+logger.info({ msg: 'User data updated successfully' });
+```
+
+❌ **Bad**:
+
+```typescript
+// Calcule le revenu locatif annuel
+const revenuLocatifAnnuel = loyerMensuel * 12;
+throw new Error("Prix d'achat invalide");
+logger.info({ msg: 'Données utilisateur mises à jour avec succès' });
+```
+
 # Commit Message Conventions
 
 When creating git commits, follow these conventional commit patterns:

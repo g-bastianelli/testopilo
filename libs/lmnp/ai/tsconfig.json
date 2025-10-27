@@ -1,0 +1,19 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "files": [],
+  "include": [],
+  "references": [
+    {
+      "path": "../../utils/logger"
+    },
+    {
+      "path": "../../utils/config"
+    },
+    {
+      "path": "../shared"
+    },
+    {
+      "path": "./tsconfig.lib.json"
+    }
+  ]
+}

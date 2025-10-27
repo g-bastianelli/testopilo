@@ -5,7 +5,13 @@
   "type": "module",
   "dependencies": {
     "@hono/node-server": "1.19.5",
-    "@testopilo/logger": "workspace:*",
-    "hono": "4.9.12"
+    "@hono/zod-validator": "^0.7.4",
+    "@lmnp/ai": "workspace:*",
+    "@lmnp/shared": "workspace:*",
+    "@utils/config": "workspace:*",
+    "@utils/logger": "workspace:*",
+    "hono": "4.9.12",
+    "zod": "catalog:",
+    "zod-to-json-schema": "^3.24.6"
   }
 }
