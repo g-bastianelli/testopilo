@@ -1,89 +1,108 @@
-# Testopilo
+# 🏡 Simulateur LMNP AI-First
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+> **Simulateur fiscal LMNP avec IA conversationnelle**
+> Discutez naturellement avec une IA pour simuler votre fiscalité (Micro-BIC vs Régime Réel)
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is almost ready ✨.
+[![Demo Video](https://img.shields.io/badge/📹_Démo-Loom-5865F2?style=for-the-badge)](https://www.loom.com/share/48495c743a914591b6985f4d1ea8e0ce)
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/nx-api/js?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+---
 
-## Finish your CI setup
+## 🚀 Démarrage rapide (3 étapes)
 
-[Click here to finish setting up your workspace!](https://cloud.nx.app/connect/9wxAgnjvNF)
+### 1️⃣ Installer les dépendances
 
-## Generate a library
-
-```sh
-npx nx g @nx/js:lib packages/pkg1 --publishable --importPath=@my-org/pkg1
+```bash
+pnpm install
 ```
 
-## Run tasks
+### 2️⃣ Configurer la clé API
 
-To build the library use:
+Créer un fichier `.env` à la racine :
 
-```sh
-npx nx build pkg1
+```env
+XAI_API_KEY=your-xai-api-key-here
 ```
 
-To run any task with Nx use:
+### 3️⃣ Lancer l'application
 
-```sh
-npx nx <target> <project-name>
+```bash
+pnpm dev
 ```
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+**C'est tout !** 🎉
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+- Frontend : http://localhost:4200
+- Backend : http://localhost:3000
 
-## Versioning and releasing
+---
 
-To version and release the library use
+## 🎯 Qu'est-ce que c'est ?
+
+Un simulateur fiscal LMNP où vous **discutez** avec une IA qui :
+
+1. ✅ Extrait automatiquement vos infos (prix d'achat, loyer, charges...)
+2. ✅ Calcule la fiscalité Micro-BIC vs Régime Réel
+3. ✅ Recommande le meilleur choix
+4. ✅ Affiche les résultats en temps réel
+
+### Exemple de conversation
 
 ```
-npx nx release
+Vous : "J'ai acheté un appartement à 200 000€"
+IA   : "Noté ! Quel est le loyer mensuel ?"
+Vous : "800€ par mois"
+IA   : "Parfait. Quelles sont vos charges annuelles ?"
+...
+→ Simulation s'affiche automatiquement dès que tout est rempli
 ```
 
-Pass `--dry-run` to see what would happen without actually releasing the library.
+---
 
-[Learn more about Nx release &raquo;](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## 💡 Points forts
 
-## Keep TypeScript project references up to date
+- **Zéro hallucinations** : Calculs 100% TypeScript (l'IA ne calcule jamais)
+- **ReAct Agent** : IA autonome avec tool calling (LangGraph)
+- **Type-safe** : Validation Zod partout
+- **Monorepo Nx** : Architecture professionnelle
 
-Nx automatically updates TypeScript [project references](https://www.typescriptlang.org/docs/handbook/project-references.html) in `tsconfig.json` files to ensure they remain accurate based on your project dependencies (`import` or `require` statements). This sync is automatically done when running tasks such as `build` or `typecheck`, which require updated references to function correctly.
+---
 
-To manually trigger the process to sync the project graph dependencies information to the TypeScript project references, run the following command:
+## 🏗️ Architecture
 
-```sh
-npx nx sync
+```
+Frontend (React)  →  Backend (Hono)  →  ReAct Agent  →  Calculs TypeScript
+    :4200              :3000              LangGraph       (zéro hallucination)
 ```
 
-You can enforce that the TypeScript project references are always in the correct state when running in CI by adding a step to your CI job configuration that runs the following command:
+**Stack** :
 
-```sh
-npx nx sync:check
+- Backend : Hono + LangChain + xAI (Grok)
+- Frontend : React + Vite + TanStack Router
+- Shared : Zod schemas + calculations
+
+---
+
+## 🛠️ Commandes utiles
+
+```bash
+pnpm dev          # Lance tout (backend + frontend)
+pnpm build        # Build de production
+nx test           # Tests unitaires
+nx lint           # Linting
 ```
 
-[Learn more about nx sync](https://nx.dev/reference/nx-commands#sync)
+---
 
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## 🐛 Problèmes courants
 
-## Install Nx Console
+**Frontend ne se connecte pas** → Vérifier `.env` : `XAI_API_KEY=...`
 
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
+**Calculs ne s'affichent pas** → 5 champs requis : prix, loyer, charges, durée, TMI
 
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+**Erreur de build** → `nx reset && pnpm install`
 
-## Useful links
+---
 
-Learn more:
+## 📝 Licence
 
-- [Learn more about this workspace setup](https://nx.dev/nx-api/js?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-And join the Nx community:
-
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+MIT
