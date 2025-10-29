@@ -55,13 +55,11 @@ IMPORTANT : Utilise UNIQUEMENT les chiffres fournis, ne calcule rien toi-même.`
 /**
  * Explain node - Generates pedagogical explanation of results
  */
-export async function explainNode(
-  state: {
-    updatedData?: SimulationData;
-    calculationResult?: RegimeComparison;
-    extractionMessage?: string;
-  }
-): Promise<{
+export async function explainNode(state: {
+  updatedData?: SimulationData;
+  calculationResult?: RegimeComparison;
+  extractionMessage?: string;
+}): Promise<{
   finalMessage: string;
   simulationResult: RegimeComparison;
 }> {

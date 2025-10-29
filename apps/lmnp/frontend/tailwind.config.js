@@ -12,4 +12,5 @@ export default {
     ),
     ...createGlobPatternsForDependencies(__dirname),
   ],
+  plugins: [...(uiConfig.plugins || []), require('@tailwindcss/typography')],
 };

@@ -5,9 +5,16 @@
   "type": "module",
   "dependencies": {
     "@lmnp/shared": "workspace:*",
+    "@tanstack/react-query": "^5.90.5",
+    "@tanstack/react-router": "^1.133.32",
+    "@tanstack/react-router-devtools": "^1.133.34",
     "@testopilo/ui": "workspace:*",
     "lucide-react": "catalog:",
     "react": "catalog:",
-    "react-dom": "catalog:"
+    "react-dom": "catalog:",
+    "react-markdown": "^10.1.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/typography": "^0.5.19"
   }
 }

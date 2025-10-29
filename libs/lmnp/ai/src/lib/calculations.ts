@@ -84,11 +84,11 @@ export function calculateMicroBic(
   // Calculate tax
   const tax = (taxableIncome * data.taxRate) / 100;
 
-  // Net income
-  const netIncome = annualRent - tax;
+  // Net income after tax and actual expenses
+  const netIncome = annualRent - tax - data.annualExpenses;
 
   // Cash flow (after loan payments if any)
-  let cashFlow = netIncome - data.annualExpenses;
+  let cashFlow = netIncome;
   if (data.loanAmount && data.interestRate && data.loanDuration) {
     const monthlyPayment = calculateMonthlyPayment(
       data.loanAmount,
@@ -136,20 +136,23 @@ export function calculateRealRegime(
       )
     : 0;
 
-  // Real regime: deduct actual expenses + depreciation + loan interest
-  const deductions = data.annualExpenses + depreciation + loanInterest;
+  // Real regime: deduct actual expenses only (depreciation shown separately)
+  const deductions = data.annualExpenses;
+
+  // Total fiscal deductions including depreciation and loan interest
+  const totalDeductions = deductions + depreciation + loanInterest;
 
   // Taxable income (can be negative = deficit)
-  const taxableIncome = Math.max(0, annualRent - deductions);
+  const taxableIncome = Math.max(0, annualRent - totalDeductions);
 
   // Calculate tax
   const tax = (taxableIncome * data.taxRate) / 100;
 
-  // Net income
-  const netIncome = annualRent - tax;
+  // Net income after tax and actual expenses
+  const netIncome = annualRent - tax - data.annualExpenses;
 
   // Cash flow (after loan payments if any)
-  let cashFlow = netIncome - data.annualExpenses;
+  let cashFlow = netIncome;
   if (data.loanAmount && data.interestRate && data.loanDuration) {
     const monthlyPayment = calculateMonthlyPayment(
       data.loanAmount,
