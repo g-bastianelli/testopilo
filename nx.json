@@ -54,7 +54,10 @@
   ],
   "targetDefaults": {
     "test": {
-      "dependsOn": ["^build"]
+      "dependsOn": ["^build"],
+      "options": {
+        "passWithNoTests": true
+      }
     },
     "@nx/esbuild:esbuild": {
       "cache": true,
