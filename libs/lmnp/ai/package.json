@@ -18,7 +18,6 @@
   "dependencies": {
     "@langchain/core": "^1.0.1",
     "@langchain/langgraph": "^1.0.1",
-    "@langchain/openai": "^1.0.0",
     "@langchain/xai": "^1.0.0",
     "@lmnp/shared": "workspace:*",
     "@utils/config": "workspace:*",
