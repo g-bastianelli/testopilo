@@ -11,13 +11,16 @@ import {
 
 describe('LMNP Schemas', () => {
   describe('SimulationDataSchema', () => {
-    it('should validate correct simulation data', () => {
+    it('should validate correct simulation data with all fields null', () => {
       const validData = {
-        purchasePrice: 200_000,
-        monthlyRent: 800,
-        annualExpenses: 1_500,
-        holdingPeriod: 10,
-        taxRate: 30,
+        purchasePrice: null,
+        monthlyRent: null,
+        annualExpenses: null,
+        holdingPeriod: null,
+        taxRate: null,
+        loanAmount: null,
+        interestRate: null,
+        loanDuration: null,
       };
 
       const result = SimulationDataSchema.safeParse(validData);
@@ -91,15 +94,18 @@ describe('LMNP Schemas', () => {
     });
 
     it('should accept all valid tax rates', () => {
-      const validTaxRates = [0, 11, 30, 41, 45];
+      const validTaxRates = [0, 11, 30, 41, 45, null];
 
       validTaxRates.forEach((rate) => {
         const data = {
-          purchasePrice: 200_000,
-          monthlyRent: 800,
-          annualExpenses: 1_500,
-          holdingPeriod: 10,
+          purchasePrice: null,
+          monthlyRent: null,
+          annualExpenses: null,
+          holdingPeriod: null,
           taxRate: rate,
+          loanAmount: null,
+          interestRate: null,
+          loanDuration: null,
         };
 
         const result = SimulationDataSchema.safeParse(data);
@@ -247,11 +253,14 @@ describe('LMNP Schemas', () => {
           { role: 'assistant', content: 'Hi there!' },
         ],
         currentData: {
-          purchasePrice: 200_000,
-          monthlyRent: 800,
-          annualExpenses: 1_500,
-          holdingPeriod: 10,
-          taxRate: 30,
+          purchasePrice: null,
+          monthlyRent: null,
+          annualExpenses: null,
+          holdingPeriod: null,
+          taxRate: null,
+          loanAmount: null,
+          interestRate: null,
+          loanDuration: null,
         },
       };
 
@@ -281,11 +290,14 @@ describe('LMNP Schemas', () => {
       const response = {
         message: 'I understand you want to buy a property for €200,000.',
         updatedData: {
-          purchasePrice: 200_000,
-          monthlyRent: 800,
-          annualExpenses: 1_500,
-          holdingPeriod: 10,
-          taxRate: 30,
+          purchasePrice: null,
+          monthlyRent: null,
+          annualExpenses: null,
+          holdingPeriod: null,
+          taxRate: null,
+          loanAmount: null,
+          interestRate: null,
+          loanDuration: null,
         },
       };
 
