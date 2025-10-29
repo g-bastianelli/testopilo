@@ -9,9 +9,9 @@
     "build": {
       "executor": "@nx/vite:build",
       "outputs": ["{options.outputPath}"],
+      "dependsOn": ["^build"],
       "options": {
-        "outputPath": "apps/lmnp/frontend/dist",
-        "buildLibsFromSource": true
+        "outputPath": "apps/lmnp/frontend/dist"
       },
       "defaultConfiguration": "production",
       "configurations": {
@@ -25,9 +25,9 @@
     },
     "serve": {
       "executor": "@nx/vite:dev-server",
+      "dependsOn": ["^build"],
       "options": {
         "buildTarget": "lmnp-frontend:build:development",
-        "buildLibsFromSource": true,
         "hmr": true
       },
       "configurations": {
@@ -40,6 +40,7 @@
     },
     "preview": {
       "executor": "@nx/vite:preview-server",
+      "dependsOn": ["^build"],
       "options": {
         "buildTarget": "lmnp-frontend:build:production"
       },
