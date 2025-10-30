@@ -16,12 +16,11 @@
     }
   },
   "dependencies": {
-    "@langchain/core": "^1.0.1",
-    "@langchain/langgraph": "^1.0.1",
-    "@langchain/xai": "^1.0.0",
+    "@ai-sdk/xai": "^2.0.29",
     "@lmnp/shared": "workspace:*",
     "@utils/config": "workspace:*",
     "@utils/logger": "workspace:*",
+    "ai": "^5.0.82",
     "tslib": "^2.3.0",
     "zod": "catalog:"
   }

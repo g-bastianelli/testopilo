@@ -1,16 +1,12 @@
 /**
- * LangChain tool for LMNP AI service
+ * AI SDK tool for LMNP AI service
  * Updates simulation data by merging current data with extracted data
  */
 
-import { tool } from '@langchain/core/tools';
+import { tool } from 'ai';
 import { logger } from '@utils/logger';
 import { z } from 'zod';
-import {
-  SimulationData,
-  SimulationDataSchema,
-  UpdateSimulationSchema,
-} from '@lmnp/shared';
+import { SimulationDataSchema, UpdateSimulationSchema } from '@lmnp/shared';
 
 /**
  * Tool input schema: receives current data + extracted fields
@@ -20,45 +16,45 @@ const ToolInputSchema = z.object({
   extractedData: UpdateSimulationSchema,
 });
 
-type ToolOutput =
-  | {
-      succes: true;
-      data: SimulationData;
-    }
-  | {
-      succes: false;
-      error: string;
-    };
+const OutputSchema = z.union([
+  z.object({
+    success: z.literal(true),
+    data: SimulationDataSchema,
+  }),
+  z.object({
+    success: z.literal(false),
+    error: z.string(),
+  }),
+]);
 
 /**
  * Update simulation data tool
  * Simply merges current data with newly extracted data
  */
-export const updateSimulationDataTool = tool(
-  async (input): Promise<ToolOutput> => {
+export const updateSimulationDataTool = tool({
+  description:
+    'Update simulation data by merging current data with newly extracted fields. ALWAYS pass both currentData (current state) and extractedData (new fields from user message).',
+  inputSchema: ToolInputSchema,
+  outputSchema: OutputSchema,
+  execute: async (input) => {
+    const { currentData, extractedData } = input;
     try {
-      // Validate input structure
-      const { currentData, extractedData } = ToolInputSchema.parse(input);
-
       // Merge current data with extracted data
-      const updatedData = { ...currentData, ...extractedData };
+      const updatedData = {
+        ...currentData,
+        ...extractedData,
+      };
 
       return {
-        succes: true,
+        success: true,
         data: updatedData,
       };
     } catch (err) {
       logger.error({ msg: 'Tool: execution error', err });
       return {
-        succes: false,
+        success: false,
         error: err instanceof Error ? err.message : String(err),
       };
     }
   },
-  {
-    name: 'update_simulation_data',
-    description:
-      'Update simulation data by merging current data with newly extracted fields. ALWAYS pass both currentData (current state) and extractedData (new fields from user message).',
-    schema: ToolInputSchema,
-  }
-);
+});

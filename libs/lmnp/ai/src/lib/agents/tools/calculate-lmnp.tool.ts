@@ -1,21 +1,43 @@
 /**
- * LangChain tool for LMNP calculation
- * Standard LangChain tool - stateless and returns structured data
+ * AI SDK tool for LMNP calculation
+ * Standard AI SDK tool - stateless and returns structured data
  */
 
-import { tool } from '@langchain/core/tools';
+import { tool } from 'ai';
 import { logger } from '@utils/logger';
 import { CompleteSimulationDataSchema } from '@lmnp/shared';
 import { compareRegimes } from '../../calculations.js';
 
 /**
- * Standard LangChain tool for calculating LMNP simulation
+ * Standard AI SDK tool for calculating LMNP simulation
  * Takes simulation data as input and returns calculation results
  */
-export const calculateLmnpTool = tool(
-  async (input) => {
+export const calculateLmnpTool = tool({
+  description:
+    'Calculate the complete LMNP fiscal simulation comparing Micro-BIC and Real Regime (Régime Réel). Call this tool ONLY when all required data is complete (purchase price, monthly rent, annual expenses, holding period, and tax rate). This tool performs all tax calculations and returns detailed comparison results with recommendation. NEVER attempt to calculate taxes yourself - always use this tool.',
+  inputSchema: CompleteSimulationDataSchema,
+  execute: async (input) => {
+    const {
+      purchasePrice,
+      monthlyRent,
+      annualExpenses,
+      holdingPeriod,
+      taxRate,
+      loanAmount,
+      interestRate,
+      loanDuration,
+    } = input;
     try {
-      const comparisonResult = compareRegimes(input);
+      const comparisonResult = compareRegimes({
+        purchasePrice,
+        monthlyRent,
+        annualExpenses,
+        holdingPeriod,
+        taxRate,
+        loanAmount: loanAmount ?? null,
+        interestRate: interestRate ?? null,
+        loanDuration: loanDuration ?? null,
+      });
 
       if (!comparisonResult) {
         logger.error({ msg: 'Calculation failed despite complete data' });
@@ -31,7 +53,7 @@ export const calculateLmnpTool = tool(
         annualSavings: comparisonResult.annualSavings,
       });
 
-      // Return structured data - LangChain handles serialization
+      // Return structured data
       return {
         success: true,
         result: comparisonResult,
@@ -44,10 +66,4 @@ export const calculateLmnpTool = tool(
       };
     }
   },
-  {
-    name: 'calculate_lmnp_simulation',
-    description:
-      'Calculate the complete LMNP fiscal simulation comparing Micro-BIC and Real Regime (Régime Réel). Call this tool ONLY when all required data is complete (purchase price, monthly rent, annual expenses, holding period, and tax rate). This tool performs all tax calculations and returns detailed comparison results with recommendation. NEVER attempt to calculate taxes yourself - always use this tool.',
-    schema: CompleteSimulationDataSchema,
-  }
-);
+});

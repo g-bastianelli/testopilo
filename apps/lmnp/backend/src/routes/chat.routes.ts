@@ -7,10 +7,9 @@ import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { logger } from '@utils/logger';
 import { ChatRequestSchema, ChatResponseSchema } from '@lmnp/shared';
-import { createChatWorkflow } from '@lmnp/ai';
+import { runChatWorkflow } from '@lmnp/ai';
 
 const chat = new Hono();
-const chatWorkflow = createChatWorkflow();
 
 chat.post('/', zValidator('json', ChatRequestSchema), async (c) => {
   try {
@@ -22,10 +21,7 @@ chat.post('/', zValidator('json', ChatRequestSchema), async (c) => {
     });
 
     // Execute the LangGraph workflow
-    const result = await chatWorkflow.invoke({
-      messages,
-      currentData,
-    });
+    const result = await runChatWorkflow(messages, currentData);
 
     logger.info({
       msg: '[Chat] Workflow completed',
@@ -34,7 +30,7 @@ chat.post('/', zValidator('json', ChatRequestSchema), async (c) => {
 
     // Build response from workflow result
     const response = {
-      message: result.finalMessage || result.extractionMessage || '',
+      message: result.message,
       updatedData: result.updatedData || currentData,
       simulationResult: result.simulationResult,
     };

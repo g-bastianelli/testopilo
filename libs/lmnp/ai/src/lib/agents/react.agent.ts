@@ -9,13 +9,8 @@
  * 4. Agent explains results to user
  */
 
-import { createReactAgent } from '@langchain/langgraph/prebuilt';
-import { ChatXAI } from '@langchain/xai';
-import {
-  AIMessage,
-  HumanMessage,
-  SystemMessage,
-} from '@langchain/core/messages';
+import { generateText, stepCountIs } from 'ai';
+import { createXai } from '@ai-sdk/xai';
 import { logger } from '@utils/logger';
 import { ChatMessage, RegimeComparison, SimulationData } from '@lmnp/shared';
 import { updateSimulationDataTool } from './tools/update-simulation-data.tool.js';
@@ -54,21 +49,13 @@ RÈGLES:
 }
 
 /**
- * Convert ChatMessage[] to LangChain messages, preserving roles
+ * Convert ChatMessage[] to AI SDK messages format
  */
-function convertToLangChainMessages(
-  messages: ChatMessage[],
-  systemPrompt: string
-) {
-  return [
-    new SystemMessage(systemPrompt),
-    ...messages.map((msg) => {
-      if (msg.role === 'assistant') {
-        return new AIMessage(msg.content);
-      }
-      return new HumanMessage(msg.content);
-    }),
-  ];
+function convertToAISDKMessages(messages: ChatMessage[]) {
+  return messages.map((msg) => ({
+    role: msg.role as 'user' | 'assistant',
+    content: msg.content,
+  }));
 }
 
 /**
@@ -88,131 +75,81 @@ export async function runLmnpAgent(
       messagesCount: messages.length,
     });
 
-    // Create model
-    const model = new ChatXAI({
-      model: 'grok-4-fast-non-reasoning',
-      temperature: 0.7,
+    const systemPrompt = buildAgentPrompt(currentData);
+    const aiMessages = convertToAISDKMessages(messages);
+
+    logger.info({
+      msg: '[ReAct Agent] Invoking agent with AI SDK',
+      totalMessages: aiMessages.length,
+    });
+
+    // Invoke the agent with AI SDK
+    const xai = createXai({
       apiKey: env.XAI_API_KEY,
     });
 
-    // Use stateless tools
-    const tools = [updateSimulationDataTool, calculateLmnpTool];
-
-    logger.info({
-      msg: '[ReAct Agent] Creating agent',
-      toolsCount: tools.length,
-      tools: tools.map((t) => t.name),
-    });
-
-    const agent = createReactAgent({
-      llm: model,
-      tools,
-    });
-
-    const systemPrompt = buildAgentPrompt(currentData);
-
-    // Build message history - preserve assistant messages
-    const langchainMessages = convertToLangChainMessages(
-      messages,
-      systemPrompt
-    );
-
-    logger.info({
-      msg: '[ReAct Agent] Invoking agent',
-      totalMessages: langchainMessages.length,
-    });
-
-    // Invoke the agent
-    const result = await agent.invoke({
-      messages: langchainMessages,
+    const result = await generateText({
+      model: xai('grok-4-fast-non-reasoning'),
+      system: systemPrompt,
+      messages: aiMessages,
+      tools: {
+        update_simulation_data: updateSimulationDataTool,
+        calculate_lmnp_simulation: calculateLmnpTool,
+      },
+      stopWhen: stepCountIs(5),
+      temperature: 0.7,
     });
 
     logger.info({
       msg: '[ReAct Agent] Execution completed',
-      resultMessagesCount: result.messages?.length,
+      finishReason: result.finishReason,
+      stepsCount: result.steps?.length,
     });
 
-    // Extract the final AI message
-    const aiMessages = result.messages.filter(
-      (msg) => msg instanceof AIMessage
-    );
-    const finalMessage = aiMessages[aiMessages.length - 1]?.content || '';
-
-    logger.info({
-      msg: '[ReAct Agent] Final message extracted',
-      messageLength: typeof finalMessage === 'string' ? finalMessage.length : 0,
-      aiMessagesCount: aiMessages.length,
-    });
-
-    // Extract data updates and simulation results from tool calls
+    // Extract data updates and simulation results from tool results
     let updatedData = { ...currentData };
     let simulationResult: RegimeComparison | undefined = undefined;
 
-    // Parse all messages for tool calls and results
-    for (const msg of result.messages) {
-      // Check if message is AIMessage with tool_calls
-      if (
-        msg instanceof AIMessage &&
-        msg.tool_calls &&
-        msg.tool_calls.length > 0
-      ) {
-        for (const toolCall of msg.tool_calls) {
+    // Parse steps for tool results
+    for (const step of result.steps || []) {
+      if (step.toolResults && step.toolResults.length > 0) {
+        for (const toolResult of step.toolResults) {
           logger.info({
-            msg: '[ReAct Agent] Tool call detected',
-            toolName: toolCall.name,
-            toolCallId: toolCall.id,
+            msg: '[ReAct Agent] Tool result detected',
+            toolName: toolResult.toolName,
           });
 
-          // Find corresponding tool result message
-          const toolMsgIndex = result.messages.findIndex(
-            (m) => 'tool_call_id' in m && m.tool_call_id === toolCall.id
-          );
+          const resultData = toolResult.output as any;
 
-          if (toolMsgIndex !== -1) {
-            const toolMsg = result.messages[toolMsgIndex];
-
-            // Tool results are now structured objects, not JSON strings
-            const toolResult =
-              typeof toolMsg.content === 'string'
-                ? JSON.parse(toolMsg.content)
-                : toolMsg.content;
-
+          // Extract data updates from update_simulation_data tool
+          if (
+            toolResult.toolName === 'update_simulation_data' &&
+            resultData.success
+          ) {
+            updatedData = { ...updatedData, ...resultData.data };
             logger.info({
-              msg: '[ReAct Agent] Tool result processed',
-              toolName: toolCall.name,
-              success: toolResult.success,
+              msg: '[ReAct Agent] Data updated',
+              updatedFields: Object.keys(resultData.data),
             });
+          }
 
-            // Extract data updates from update_simulation_data tool
-            if (
-              toolCall.name === 'update_simulation_data' &&
-              toolResult.success
-            ) {
-              updatedData = { ...updatedData, ...toolResult.data };
-              logger.info({
-                msg: '[ReAct Agent] Data updated',
-                updatedFields: toolResult.updatedFields,
-              });
-            }
-
-            // Extract simulation result from calculate tool
-            if (
-              toolCall.name === 'calculate_lmnp_simulation' &&
-              toolResult.success
-            ) {
-              simulationResult = toolResult.result;
-              logger.info({
-                msg: '[ReAct Agent] Simulation calculated',
-                recommendedRegime: simulationResult?.recommendedRegime,
-              });
-            }
+          // Extract simulation result from calculate tool
+          if (
+            toolResult.toolName === 'calculate_lmnp_simulation' &&
+            resultData.success
+          ) {
+            simulationResult = resultData.result;
+            logger.info({
+              msg: '[ReAct Agent] Simulation calculated',
+              recommendedRegime: simulationResult?.recommendedRegime,
+            });
           }
         }
       }
     }
 
     return {
-      message: finalMessage as string,
+      message: result.text,
       updatedData,
       simulationResult,
     };

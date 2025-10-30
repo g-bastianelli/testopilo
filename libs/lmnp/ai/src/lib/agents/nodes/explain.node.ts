@@ -1,11 +1,12 @@
 /**
  * Explain Node - Generates pedagogical explanation of LMNP simulation results
- * Pure function for LangGraph workflow
+ * Pure function for workflow
  */
 
 import { logger } from '@utils/logger';
 import type { RegimeComparison, SimulationData } from '@lmnp/shared';
-import { ChatXAI } from '@langchain/xai';
+import { generateText } from 'ai';
+import { createXai } from '@ai-sdk/xai';
 import { env } from '../../env.js';
 
 /**
@@ -70,26 +71,25 @@ export async function explainNode(state: {
   }
 
   try {
-    const model = new ChatXAI({
-      model: 'grok-4-fast-non-reasoning',
-      temperature: 0.8,
-      apiKey: env.XAI_API_KEY,
-    });
-
     const prompt = buildExplanationPrompt(
       state.updatedData,
       state.calculationResult
     );
 
-    const response = await model.invoke(prompt);
+    const xai = createXai({
+      apiKey: env.XAI_API_KEY,
+    });
+
+    const response = await generateText({
+      model: xai('grok-4-fast-non-reasoning'),
+      prompt,
+      temperature: 0.8,
+    });
 
     logger.info({ msg: '[Explain Node] Explanation generated' });
 
-    // Use only the explanation, ignore extractionMessage when we have results
-    const finalMessage = response.content as string;
-
     return {
-      finalMessage,
+      finalMessage: response.text,
       simulationResult: state.calculationResult,
     };
   } catch (err) {

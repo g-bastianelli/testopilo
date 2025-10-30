@@ -75,8 +75,8 @@ export const CompleteSimulationDataSchema = SimulationDataSchema.extend({
 });
 
 /**
- * Schema for partial updates (used by AI)
- * Note: Optional fields use .nonnegative() instead of .positive() to allow 0 values
+ * Schema for partial updates (used by AI) - without transform
+ * Compatible with AI SDK tools (no transforms allowed in JSON Schema)
  */
 export const UpdateSimulationSchema = SimulationDataSchema.extend({
   purchasePrice: SimulationDataSchema.shape.purchasePrice.optional(),
@@ -87,13 +87,19 @@ export const UpdateSimulationSchema = SimulationDataSchema.extend({
   loanAmount: SimulationDataSchema.shape.loanAmount.optional(),
   interestRate: SimulationDataSchema.shape.interestRate.optional(),
   loanDuration: SimulationDataSchema.shape.loanDuration.optional(),
-})
-  .strip()
-  .transform((data) => {
+}).partial();
+
+/**
+ * Schema with transform for server-side validation (if needed)
+ * Filters out undefined values
+ */
+export const UpdateSimulationSchemaWithTransform = UpdateSimulationSchema.transform(
+  (data) => {
     return Object.fromEntries(
       Object.entries(data).filter(([_, value]) => value !== undefined)
-    );
-  });
+    ) as Partial<SimulationData>;
+  }
+);
 
 /**
  * Schema for a chat message

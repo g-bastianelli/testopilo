@@ -1,17 +1,12 @@
 /**
  * Extract Node - Extracts simulation data from user conversation
- * Pure function for LangGraph workflow
+ * Pure function for workflow
  */
 
 import { logger } from '@utils/logger';
 import type { ChatMessage, SimulationData } from '@lmnp/shared';
-import { ChatXAI } from '@langchain/xai';
-import {
-  AIMessage,
-  type BaseMessage,
-  HumanMessage,
-  SystemMessage,
-} from '@langchain/core/messages';
+import { generateText } from 'ai';
+import { createXai } from '@ai-sdk/xai';
 import { env } from '../../env.js';
 import { updateSimulationDataTool } from '../tools/update-simulation-data.tool.js';
 
@@ -125,21 +120,13 @@ RAPPEL FINAL : Ne retourne JAMAIS une réponse vide. Même si tu appelles l'outi
 }
 
 /**
- * Convert ChatMessage[] to LangChain BaseMessage[], preserving roles
+ * Convert ChatMessage[] to AI SDK messages format
  */
-function convertToLangChainMessages(
-  messages: ChatMessage[],
-  systemPrompt: string
-): BaseMessage[] {
-  return [
-    new SystemMessage(systemPrompt),
-    ...messages.map((msg) => {
-      if (msg.role === 'assistant') {
-        return new AIMessage(msg.content);
-      }
-      return new HumanMessage(msg.content);
-    }),
-  ];
+function convertToAISDKMessages(messages: ChatMessage[]) {
+  return messages.map((msg) => ({
+    role: msg.role as 'user' | 'assistant',
+    content: msg.content,
+  }));
 }
 
 /**
@@ -155,67 +142,65 @@ export async function extractNode(state: {
   logger.info({ msg: '[Extract Node] Starting data extraction' });
 
   const systemPrompt = buildSystemPrompt(state.currentData);
+  const aiMessages = convertToAISDKMessages(state.messages);
 
-  // Create model and tools
-  const model = new ChatXAI({
-    model: 'grok-4-fast-non-reasoning',
-    temperature: 0.7,
+  // Invoke the model with AI SDK
+  const xai = createXai({
     apiKey: env.XAI_API_KEY,
   });
 
-  // Use stateless tool
-  const modelWithTools = model.bindTools([updateSimulationDataTool]);
-
-  // Convert messages to LangChain format - preserve assistant messages
-  const langchainMessages = convertToLangChainMessages(
-    state.messages,
-    systemPrompt
-  );
-
-  // Invoke the model
-  const response = await modelWithTools.invoke(langchainMessages);
+  const response = await generateText({
+    model: xai('grok-4-fast-non-reasoning'),
+    system: systemPrompt,
+    messages: aiMessages,
+    tools: {
+      update_simulation_data: updateSimulationDataTool,
+    },
+    temperature: 0.7,
+  });
 
   // Check if the model called any tools
-  if (response.tool_calls && response.tool_calls.length > 0) {
-    const toolCall = response.tool_calls[0];
+  const updatedData = state.currentData;
 
-    if (toolCall.name === 'update_simulation_data') {
-      // Call the tool - it returns the result object from our function
-      const toolResult = await updateSimulationDataTool.invoke(
-        toolCall.args as any
-      );
+  const updateSimulationDataResult = response.toolResults.find(
+    (
+      toolResult
+    ): toolResult is Extract<
+      (typeof response.toolResults)[number],
+      { toolName: 'update_simulation_data' }
+    > => toolResult.toolName === 'update_simulation_data'
+  );
 
-      if ('data' in toolResult) {
-        logger.debug({
-          msg: '[Extract Node] Data updated',
-          updatedData: toolResult.data,
-        });
-
-        return {
-          updatedData: toolResult.data,
-          extractionMessage: response.content as string,
-        };
-      } else if ('error' in toolResult) {
-        logger.error({
-          msg: '[Extract Node] Tool failed',
-          error: toolResult.error,
-        });
-        throw new Error(`Tool execution failed`, {
-          cause: toolResult.error,
-        });
-      } else {
-        logger.error({
-          msg: '[Extract Node] Invalid tool result',
-          result: toolResult,
-        });
-        throw new Error('Invalid tool result');
-      }
+  if (updateSimulationDataResult) {
+    logger.debug({
+      msg: '[Extract Node] Tool execution successful',
+    });
+    if (updateSimulationDataResult.output.success) {
+      logger.debug({
+        msg: '[Extract Node] Tool execution successful',
+        data: updateSimulationDataResult.output.data,
+      });
+      return {
+        updatedData: updateSimulationDataResult.output.data,
+        extractionMessage: response.text,
+      };
+    } else {
+      logger.debug({
+        msg: '[Extract Node] Tool execution failed',
+        error: updateSimulationDataResult.output.error,
+      });
+      return {
+        updatedData,
+        extractionMessage: response.text,
+      };
     }
   }
+  logger.debug({
+    msg: '[Extract Node] Tool execution not found',
+  });
 
-  // No tool call - return current data unchanged
   return {
-    updatedData: state.currentData,
-    extractionMessage: response.content as string,
+    updatedData,
+    extractionMessage: response.text,
   };
 }

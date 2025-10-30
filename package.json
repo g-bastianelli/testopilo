@@ -4,7 +4,7 @@
   "license": "MIT",
   "scripts": {
     "prepare": "husky",
-    "dev": "nx run-many --target=serve --projects=lmnp-backend,lmnp-frontend --parallel=2"
+    "dev": "nx run-many --target=serve --projects=lmnp-backend,lmnp-frontend --parallel=2 --configuration=development"
   },
   "private": true,
   "lint-staged": {

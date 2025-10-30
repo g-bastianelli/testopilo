@@ -1,9 +1,8 @@
 /**
- * LangGraph Workflow for LMNP Chat
+ * Workflow for LMNP Chat with AI SDK
  * Architecture: Extract → Calculate → Explain
  */
 
-import { StateGraph, END, START, Annotation } from '@langchain/langgraph';
 import { logger } from '@utils/logger';
 import {
   type ChatMessage,
@@ -16,59 +15,79 @@ import { calculateNode } from './nodes/calculate.node.js';
 import { explainNode } from './nodes/explain.node.js';
 
 /**
- * State for the chat workflow using LangGraph Annotation API with reducers
+ * State for the chat workflow
  */
-const ChatWorkflowState = Annotation.Root({
-  // Input - messages accumulate over time
-  messages: Annotation<ChatMessage[]>({
-    reducer: (state, update) => state.concat(update),
-    default: () => [],
-  }),
-  currentData: Annotation<SimulationData>,
-
-  // Intermediate state
-  updatedData: Annotation<SimulationData | undefined>,
-  extractionMessage: Annotation<string | undefined>,
-  calculationResult: Annotation<RegimeComparison | undefined>,
-
-  // Output
-  finalMessage: Annotation<string | undefined>,
-  simulationResult: Annotation<RegimeComparison | undefined>,
-});
-
-/**
- * Conditional edge: Should we calculate?
- */
-function shouldCalculate(state: typeof ChatWorkflowState.State): string {
-  const validate = CompleteSimulationDataSchema.safeParse(state.updatedData);
-
-  if (validate.success) {
-    logger.info({ msg: '[LangGraph] Data complete, routing to calculate' });
-    return 'calculate';
-  }
-
-  logger.info({ msg: '[LangGraph] Data incomplete, ending workflow' });
-  return END;
+interface ChatWorkflowState {
+  messages: ChatMessage[];
+  currentData: SimulationData;
+  updatedData?: SimulationData;
+  extractionMessage?: string;
+  calculationResult?: RegimeComparison;
+  finalMessage?: string;
+  simulationResult?: RegimeComparison;
 }
 
 /**
- * Create and compile the chat workflow graph
+ * Run the chat workflow manually
  */
-export function createChatWorkflow() {
-  const workflow = new StateGraph(ChatWorkflowState)
+export async function runChatWorkflow(
+  messages: ChatMessage[],
+  currentData: SimulationData
+): Promise<{
+  message: string;
+  updatedData: SimulationData;
+  simulationResult?: RegimeComparison;
+}> {
+  logger.info({ msg: '[Workflow] Starting chat workflow' });
 
-    // Add nodes
-    .addNode('extract', extractNode)
-    .addNode('calculate', calculateNode)
-    .addNode('explain', explainNode)
-    // Add edges
-    .addEdge(START, 'extract')
-    .addConditionalEdges('extract', shouldCalculate, {
-      calculate: 'calculate',
-      __end__: END,
-    })
-    .addEdge('calculate', 'explain')
-    .addEdge('explain', END);
+  // Initialize state
+  const state: ChatWorkflowState = {
+    messages,
+    currentData,
+  };
 
-  return workflow.compile();
+  // Step 1: Extract
+  logger.info({ msg: '[Workflow] Running extract node' });
+  const extractResult = await extractNode({
+    messages: state.messages,
+    currentData: state.currentData,
+  });
+  state.updatedData = extractResult.updatedData;
+  state.extractionMessage = extractResult.extractionMessage;
+
+  // Step 2: Check if data is complete
+  const validate = CompleteSimulationDataSchema.safeParse(state.updatedData);
+
+  if (!validate.success) {
+    logger.info({ msg: '[Workflow] Data incomplete, ending workflow' });
+    return {
+      message: state.extractionMessage || '',
+      updatedData: state.updatedData,
+    };
+  }
+
+  // Step 3: Calculate
+  logger.info({ msg: '[Workflow] Data complete, running calculate node' });
+  const calculateResult = await calculateNode({
+    updatedData: validate.data,
+  });
+  state.calculationResult = calculateResult.calculationResult;
+
+  // Step 4: Explain
+  logger.info({ msg: '[Workflow] Running explain node' });
+  const explainResult = await explainNode({
+    updatedData: state.updatedData,
+    calculationResult: state.calculationResult,
+    extractionMessage: state.extractionMessage,
+  });
+  state.finalMessage = explainResult.finalMessage;
+  state.simulationResult = explainResult.simulationResult;
+
+  logger.info({ msg: '[Workflow] Workflow complete' });
+
+  return {
+    message: state.finalMessage || '',
+    updatedData: state.updatedData,
+    simulationResult: state.simulationResult,
+  };
 }
